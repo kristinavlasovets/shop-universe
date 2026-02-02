@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import products from "./assets/products.js";
 import "./App.css";
 import ModelViewer from "./ModelViewer";
 
 function App() {
   const [selectedProductId, setSelectedProductId] = useState(null);
+  const [loadingModels, setLoadingModels] = useState(new Set());
 
   const handleExpand = (productId) => {
     setSelectedProductId(productId);
@@ -13,6 +14,28 @@ function App() {
   const handleMinimize = () => {
     setSelectedProductId(null);
   };
+
+  useEffect(() => {
+    const timerIds = [];
+
+    products.forEach((product) => {
+      setLoadingModels((prev) => new Set(prev).add(product.id));
+
+      const timerId = setTimeout(() => {
+        setLoadingModels((prev) => {
+          const newSet = new Set(prev);
+          newSet.delete(product.id);
+          return newSet;
+        });
+      }, 2000);
+
+      timerIds.push(timerId);
+    });
+
+    return () => {
+      timerIds.forEach((id) => clearTimeout(id));
+    };
+  }, []);
 
   if (selectedProductId !== null) {
     const product = products.find((p) => p.id === selectedProductId);
@@ -46,11 +69,17 @@ function App() {
       <div className="products-grid">
         {products.map((product) => {
           const modelPath = `/models/${product.id}.glb`;
+          const isLoading = loadingModels.has(product.id);
 
           return (
             <div key={product.id} className="card">
               <div className="card1">
-                <ModelViewer modelPath={modelPath} />
+                <div className="model-container">
+                  {isLoading && <div className="loader-small"></div>}
+                  <div className={isLoading ? "model-hidden" : "model-visible"}>
+                    <ModelViewer modelPath={modelPath} />
+                  </div>
+                </div>
                 <img
                   src="/icons/zoom-in.png"
                   alt="zoom-in"
