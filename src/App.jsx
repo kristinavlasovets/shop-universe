@@ -75,7 +75,7 @@ function App() {
             <div key={product.id} className="card">
               <div className="card1">
                 <div className="model-container">
-                  {isLoading && <div className="loader-small"></div>}
+                  {isLoading && <div className="loader-small" />}
                   <div className={isLoading ? "model-hidden" : "model-visible"}>
                     <ModelViewer modelPath={modelPath} />
                   </div>
